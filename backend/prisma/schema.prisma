@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────── ENUMS ─────────────
+
+enum UserType {
+  STUDENT
+  PROFESSIONAL
+  CREATOR
+  RESEARCHER
+  RECRUITER
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  CONNECTIONS_ONLY
+}
+
+enum EvidenceType {
+  PROJECT
+  CERTIFICATE
+  RESEARCH
+  INTERNSHIP
+  JOB
+  PORTFOLIO
+  ACHIEVEMENT
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum UserSkillStatus {
+  CLAIMED
+  EVIDENCED
+  RECOGNIZED
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+enum NotificationType {
+  ACKNOWLEDGEMENT
+  CONNECTION_REQUEST
+  CONNECTION_ACCEPTED
+  MESSAGE
+  LEVEL_UP
+}
+
+// ───────────── USER ─────────────
+
+model User {
+  id                String     @id @default(uuid())
+  name              String
+  email             String?    @unique
+  phone             String?    @unique
+  passwordHash      String
+  userType          UserType   @default(STUDENT)
+  bio               String?
+  field             String?
+  role              String?
+  location          String?
+  locationVisible   Boolean    @default(false)
+  availability      String?
+  avatarUrl         String?
+  score             Decimal    @default(0) @db.Decimal(6, 2)
+  trustScore        Decimal    @default(1) @db.Decimal(4, 2)
+  profileVisibility Visibility @default(PUBLIC)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  levelNumber Int @default(14)
+  level       Level @relation(fields: [levelNumber], references: [levelNumber])
+
+  skills               UserSkill[]
+  evidence             Evidence[]
+  acknowledgementsGiven    Acknowledgement[] @relation("AckFrom")
+  acknowledgementsReceived Acknowledgement[] @relation("AckTo")
+  levelHistory         LevelHistory[]
+  connectionsSent      Connection[]   @relation("ConnRequester")
+  connectionsReceived  Connection[]   @relation("ConnRecipient")
+  conversationsAsA     Conversation[] @relation("ConvUserA")
+  conversationsAsB     Conversation[] @relation("ConvUserB")
+  messagesSent         Message[]      @relation("MessageSender")
+  messagesSharingMe    Message[]      @relation("MessageSharedProfile")
+  notificationsReceived Notification[] @relation("NotifRecipient")
+  notificationsTriggered Notification[] @relation("NotifActor")
+
+  @@index([field])
+  @@index([userType])
+}
+
+// ───────────── SKILLS ─────────────
+
+model Skill {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  category  String?
+  createdAt DateTime @default(now())
+
+  userSkills       UserSkill[]
+  acknowledgements Acknowledgement[]
+}
+
+model UserSkill {
+  id                   String          @id @default(uuid())
+  userId               String
+  skillId              String
+  status               UserSkillStatus @default(CLAIMED)
+  acknowledgementCount Int             @default(0)
+  evidenceCount        Int             @default(0)
+  yearsExperience      Decimal?        @db.Decimal(4, 1)
+  createdAt            DateTime        @default(now())
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill    Skill      @relation(fields: [skillId], references: [id])
+  evidence Evidence[]
+
+  @@unique([userId, skillId])
+  @@index([skillId])
+}
+
+// ───────────── EVIDENCE ─────────────
+
+model Evidence {
+  id                 String             @id @default(uuid())
+  userId             String
+  userSkillId        String?
+  type               EvidenceType
+  title              String
+  description        String?
+  url                String?
+  fileUrl            String?
+  organization       String?
+  startDate          DateTime?
+  endDate            DateTime?
+  visibility         Visibility         @default(PUBLIC)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  createdAt          DateTime           @default(now())
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userSkill        UserSkill?        @relation(fields: [userSkillId], references: [id], onDelete: SetNull)
+  acknowledgements Acknowledgement[]
+
+  @@index([userId])
+  @@index([userSkillId])
+}
+
+// ───────────── ACKNOWLEDGEMENT ─────────────
+
+model Acknowledgement {
+  id         String   @id @default(uuid())
+  fromUserId String
+  toUserId   String
+  skillId    String
+  evidenceId String?
+  reason     String?
+  weight     Decimal  @default(1) @db.Decimal(4, 2)
+  createdAt  DateTime @default(now())
+
+  fromUser User      @relation("AckFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User      @relation("AckTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  skill    Skill     @relation(fields: [skillId], references: [id])
+  evidence Evidence? @relation(fields: [evidenceId], references: [id], onDelete: SetNull)
+
+  // one acknowledgement per skill per user
+  @@unique([fromUserId, toUserId, skillId])
+  @@index([toUserId, skillId])
+}
+
+// ───────────── LEVELS ─────────────
+
+model Level {
+  levelNumber    Int     @id
+  name           String
+  scoreThreshold Decimal @db.Decimal(6, 2)
+  themeConfig    Json?
+  description    String?
+
+  users   User[]
+  history LevelHistory[]
+}
+
+model LevelHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  levelNumber Int
+  scoreAtTime Decimal  @db.Decimal(6, 2)
+  achievedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level Level @relation(fields: [levelNumber], references: [levelNumber])
+
+  @@index([userId])
+}
+
+// ───────────── CONNECTIONS ─────────────
+
+model Connection {
+  id          String           @id @default(uuid())
+  requesterId String
+  recipientId String
+  status      ConnectionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  respondedAt DateTime?
+
+  requester User @relation("ConnRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient User @relation("ConnRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@index([recipientId, status])
+}
+
+// ───────────── CHAT ─────────────
+
+model Conversation {
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
+
+  userA    User      @relation("ConvUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB    User      @relation("ConvUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  // store the smaller user id in userAId so each pair has one conversation
+  @@unique([userAId, userBId])
+}
+
+model Message {
+  id              String    @id @default(uuid())
+  conversationId  String
+  senderId        String
+  content         String?
+  sharedProfileId String?
+  sentAt          DateTime  @default(now())
+  readAt          DateTime?
+
+  conversation  Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender        User                @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  sharedProfile User?               @relation("MessageSharedProfile", fields: [sharedProfileId], references: [id], onDelete: SetNull)
+  attachments   MessageAttachment[]
+
+  @@index([conversationId, sentAt])
+}
+
+model MessageAttachment {
+  id        String @id @default(uuid())
+  messageId String
+  fileUrl   String
+  fileType  String?
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+// ───────────── NOTIFICATIONS ─────────────
+
+model Notification {
+  id          String           @id @default(uuid())
+  recipientId String
+  actorId     String?
+  type        NotificationType
+  objectType  String?
+  objectId    String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  recipient User  @relation("NotifRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User? @relation("NotifActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([recipientId, isRead])
+}
