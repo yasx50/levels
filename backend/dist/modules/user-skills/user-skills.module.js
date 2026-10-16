@@ -12,7 +12,7 @@ let UserSkillsModule = class UserSkillsModule {
 UserSkillsModule = __decorate([
     Module({
         controllers: [UserSkillsController],
-        providers: [UserSkillsService]
+        providers: [UserSkillsService],
     })
 ], UserSkillsModule);
 export { UserSkillsModule };

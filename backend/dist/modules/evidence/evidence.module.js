@@ -5,14 +5,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
+import { PrismaModule } from '../../prisma/prisma.module.js';
+import { LevelsModule } from '../levels/levels.module.js';
 import { EvidenceController } from './evidence.controller.js';
 import { EvidenceService } from './evidence.service.js';
 let EvidenceModule = class EvidenceModule {
 };
 EvidenceModule = __decorate([
     Module({
+        imports: [PrismaModule, LevelsModule],
         controllers: [EvidenceController],
-        providers: [EvidenceService]
+        providers: [EvidenceService],
     })
 ], EvidenceModule);
 export { EvidenceModule };
