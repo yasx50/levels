@@ -1,6 +1,7 @@
+
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+ 
 }
 
 datasource db {
@@ -68,8 +69,10 @@ model User {
   id                String     @id @default(uuid())
   name              String
   email             String?    @unique
+  emailVerified     Boolean    @default(false)
+  image             String?
   phone             String?    @unique
-  passwordHash      String
+  passwordHash      String?
   userType          UserType   @default(STUDENT)
   bio               String?
   field             String?
@@ -84,25 +87,82 @@ model User {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
-  levelNumber Int @default(14)
+  levelNumber Int   @default(14)
   level       Level @relation(fields: [levelNumber], references: [levelNumber])
 
-  skills               UserSkill[]
-  evidence             Evidence[]
-  acknowledgementsGiven    Acknowledgement[] @relation("AckFrom")
-  acknowledgementsReceived Acknowledgement[] @relation("AckTo")
-  levelHistory         LevelHistory[]
-  connectionsSent      Connection[]   @relation("ConnRequester")
-  connectionsReceived  Connection[]   @relation("ConnRecipient")
-  conversationsAsA     Conversation[] @relation("ConvUserA")
-  conversationsAsB     Conversation[] @relation("ConvUserB")
-  messagesSent         Message[]      @relation("MessageSender")
-  messagesSharingMe    Message[]      @relation("MessageSharedProfile")
-  notificationsReceived Notification[] @relation("NotifRecipient")
-  notificationsTriggered Notification[] @relation("NotifActor")
+  // Better Auth relations
+  sessions Session[]
+  accounts Account[]
+
+  // Application relations
+  skills                    UserSkill[]
+  evidence                  Evidence[]
+  acknowledgementsGiven     Acknowledgement[] @relation("AckFrom")
+  acknowledgementsReceived  Acknowledgement[] @relation("AckTo")
+  levelHistory              LevelHistory[]
+  connectionsSent           Connection[] @relation("ConnRequester")
+  connectionsReceived       Connection[] @relation("ConnRecipient")
+  conversationsAsA          Conversation[] @relation("ConvUserA")
+  conversationsAsB          Conversation[] @relation("ConvUserB")
+  messagesSent              Message[] @relation("MessageSender")
+  messagesSharingMe          Message[] @relation("MessageSharedProfile")
+  notificationsReceived     Notification[] @relation("NotifRecipient")
+  notificationsTriggered    Notification[] @relation("NotifActor")
 
   @@index([field])
   @@index([userType])
+}
+
+// ───────────── BETTER AUTH: SESSION ─────────────
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ───────────── BETTER AUTH: ACCOUNT ─────────────
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ───────────── BETTER AUTH: VERIFICATION ─────────────
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
 }
 
 // ───────────── SKILLS ─────────────
@@ -178,7 +238,6 @@ model Acknowledgement {
   skill    Skill     @relation(fields: [skillId], references: [id])
   evidence Evidence? @relation(fields: [evidenceId], references: [id], onDelete: SetNull)
 
-  // one acknowledgement per skill per user
   @@unique([fromUserId, toUserId, skillId])
   @@index([toUserId, skillId])
 }
@@ -238,7 +297,6 @@ model Conversation {
   userB    User      @relation("ConvUserB", fields: [userBId], references: [id], onDelete: Cascade)
   messages Message[]
 
-  // store the smaller user id in userAId so each pair has one conversation
   @@unique([userAId, userBId])
 }
 

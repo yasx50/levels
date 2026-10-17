@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && copyfiles -u 1 \"src/generated/prisma/**/*\" dist/generated/prisma",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -55,6 +55,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.0.0",
     "@vitest/coverage-v8": "^4.1.2",
+    "copyfiles": "^2.4.1",
     "oxlint": "^1.58.0",
     "prettier": "^3.4.2",
     "prisma": "^6.19.3",
