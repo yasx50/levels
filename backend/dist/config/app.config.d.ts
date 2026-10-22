@@ -5,7 +5,8 @@ declare const _default: (() => {
         expiresIn: string;
     };
     cors: {
-        origin: boolean;
+        origin: string[];
+        credentials: boolean;
     };
     upload: {
         maxFileSizeMB: number;
@@ -17,7 +18,8 @@ declare const _default: (() => {
         expiresIn: string;
     };
     cors: {
-        origin: boolean;
+        origin: string[];
+        credentials: boolean;
     };
     upload: {
         maxFileSizeMB: number;
