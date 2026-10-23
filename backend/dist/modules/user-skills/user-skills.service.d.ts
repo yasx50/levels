@@ -5,9 +5,9 @@ export declare class UserSkillsService {
     constructor(prisma: PrismaService);
     assignSkill(dto: AssignSkillDto): Promise<{
         skill: {
-            name: string;
             id: string;
             createdAt: Date;
+            name: string;
             category: string | null;
         };
     } & {
@@ -22,9 +22,9 @@ export declare class UserSkillsService {
     }>;
     findUserSkills(userId: string): import("@prisma/client").Prisma.PrismaPromise<({
         skill: {
-            name: string;
             id: string;
             createdAt: Date;
+            name: string;
             category: string | null;
         };
     } & {

@@ -6,6 +6,7 @@ export declare class EvidenceController {
     create(dto: CreateEvidenceDto): Promise<{
         message: string;
         evidence: {
+            url: string | null;
             id: string;
             createdAt: Date;
             userId: string;
@@ -13,7 +14,6 @@ export declare class EvidenceController {
             userSkillId: string | null;
             type: import("@prisma/client").$Enums.EvidenceType;
             title: string;
-            url: string | null;
             fileUrl: string | null;
             organization: string | null;
             startDate: Date | null;
@@ -40,9 +40,9 @@ export declare class EvidenceController {
     findByUser(userId: string): Promise<({
         userSkill: ({
             skill: {
-                name: string;
                 id: string;
                 createdAt: Date;
+                name: string;
                 category: string | null;
             };
         } & {
@@ -56,6 +56,7 @@ export declare class EvidenceController {
             evidenceCount: number;
         }) | null;
     } & {
+        url: string | null;
         id: string;
         createdAt: Date;
         userId: string;
@@ -63,7 +64,6 @@ export declare class EvidenceController {
         userSkillId: string | null;
         type: import("@prisma/client").$Enums.EvidenceType;
         title: string;
-        url: string | null;
         fileUrl: string | null;
         organization: string | null;
         startDate: Date | null;
@@ -79,9 +79,9 @@ export declare class EvidenceController {
         };
         userSkill: ({
             skill: {
-                name: string;
                 id: string;
                 createdAt: Date;
+                name: string;
                 category: string | null;
             };
         } & {
@@ -95,6 +95,7 @@ export declare class EvidenceController {
             evidenceCount: number;
         }) | null;
     } & {
+        url: string | null;
         id: string;
         createdAt: Date;
         userId: string;
@@ -102,7 +103,6 @@ export declare class EvidenceController {
         userSkillId: string | null;
         type: import("@prisma/client").$Enums.EvidenceType;
         title: string;
-        url: string | null;
         fileUrl: string | null;
         organization: string | null;
         startDate: Date | null;

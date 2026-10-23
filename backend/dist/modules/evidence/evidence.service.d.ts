@@ -8,6 +8,7 @@ export declare class EvidenceService {
     create(dto: CreateEvidenceDto): Promise<{
         message: string;
         evidence: {
+            url: string | null;
             id: string;
             createdAt: Date;
             userId: string;
@@ -15,7 +16,6 @@ export declare class EvidenceService {
             userSkillId: string | null;
             type: import("@prisma/client").$Enums.EvidenceType;
             title: string;
-            url: string | null;
             fileUrl: string | null;
             organization: string | null;
             startDate: Date | null;
@@ -42,9 +42,9 @@ export declare class EvidenceService {
     findByUser(userId: string): Promise<({
         userSkill: ({
             skill: {
-                name: string;
                 id: string;
                 createdAt: Date;
+                name: string;
                 category: string | null;
             };
         } & {
@@ -58,6 +58,7 @@ export declare class EvidenceService {
             evidenceCount: number;
         }) | null;
     } & {
+        url: string | null;
         id: string;
         createdAt: Date;
         userId: string;
@@ -65,7 +66,6 @@ export declare class EvidenceService {
         userSkillId: string | null;
         type: import("@prisma/client").$Enums.EvidenceType;
         title: string;
-        url: string | null;
         fileUrl: string | null;
         organization: string | null;
         startDate: Date | null;
@@ -81,9 +81,9 @@ export declare class EvidenceService {
         };
         userSkill: ({
             skill: {
-                name: string;
                 id: string;
                 createdAt: Date;
+                name: string;
                 category: string | null;
             };
         } & {
@@ -97,6 +97,7 @@ export declare class EvidenceService {
             evidenceCount: number;
         }) | null;
     } & {
+        url: string | null;
         id: string;
         createdAt: Date;
         userId: string;
@@ -104,7 +105,6 @@ export declare class EvidenceService {
         userSkillId: string | null;
         type: import("@prisma/client").$Enums.EvidenceType;
         title: string;
-        url: string | null;
         fileUrl: string | null;
         organization: string | null;
         startDate: Date | null;

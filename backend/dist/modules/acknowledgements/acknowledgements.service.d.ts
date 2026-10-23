@@ -10,12 +10,13 @@ export declare class AcknowledgementsService {
         message: string;
         acknowledgement: {
             skill: {
-                name: string;
                 id: string;
                 createdAt: Date;
+                name: string;
                 category: string | null;
             };
             evidence: {
+                url: string | null;
                 id: string;
                 createdAt: Date;
                 userId: string;
@@ -23,7 +24,6 @@ export declare class AcknowledgementsService {
                 userSkillId: string | null;
                 type: import("@prisma/client").$Enums.EvidenceType;
                 title: string;
-                url: string | null;
                 fileUrl: string | null;
                 organization: string | null;
                 startDate: Date | null;
@@ -59,12 +59,13 @@ export declare class AcknowledgementsService {
     }>;
     findReceived(userId: string): Promise<({
         skill: {
-            name: string;
             id: string;
             createdAt: Date;
+            name: string;
             category: string | null;
         };
         evidence: {
+            url: string | null;
             id: string;
             createdAt: Date;
             userId: string;
@@ -72,7 +73,6 @@ export declare class AcknowledgementsService {
             userSkillId: string | null;
             type: import("@prisma/client").$Enums.EvidenceType;
             title: string;
-            url: string | null;
             fileUrl: string | null;
             organization: string | null;
             startDate: Date | null;
@@ -92,12 +92,13 @@ export declare class AcknowledgementsService {
     })[]>;
     findGiven(userId: string): Promise<({
         skill: {
-            name: string;
             id: string;
             createdAt: Date;
+            name: string;
             category: string | null;
         };
         evidence: {
+            url: string | null;
             id: string;
             createdAt: Date;
             userId: string;
@@ -105,7 +106,6 @@ export declare class AcknowledgementsService {
             userSkillId: string | null;
             type: import("@prisma/client").$Enums.EvidenceType;
             title: string;
-            url: string | null;
             fileUrl: string | null;
             organization: string | null;
             startDate: Date | null;

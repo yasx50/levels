@@ -4,19 +4,19 @@ export declare class UsersService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(dto: CreateUserDto): Promise<{
-        name: string;
         email: string | null;
-        phone: string | null;
         id: string;
-        userType: import("@prisma/client").$Enums.UserType;
         createdAt: Date;
+        name: string;
+        phone: string | null;
+        userType: import("@prisma/client").$Enums.UserType;
     }>;
     findAll(): import("@prisma/client").Prisma.PrismaPromise<{
-        name: string;
         email: string | null;
-        phone: string | null;
         id: string;
-        userType: import("@prisma/client").$Enums.UserType;
         createdAt: Date;
+        name: string;
+        phone: string | null;
+        userType: import("@prisma/client").$Enums.UserType;
     }[]>;
 }
