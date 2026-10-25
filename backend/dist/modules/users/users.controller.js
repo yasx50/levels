@@ -10,26 +10,34 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseInterceptors, } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { MAX_AVATAR_SIZE } from '../../utils/cloudinary/cloudinary.utility.js';
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
         this.usersService = usersService;
     }
-    create(createUserDto) {
-        return this.usersService.create(createUserDto);
+    create(createUserDto, image) {
+        return this.usersService.create(createUserDto, image);
     }
     findAll() {
         return this.usersService.findAll();
     }
+    update(id, updateUserDto, image) {
+        return this.usersService.update(id, updateUserDto, image);
+    }
 };
 __decorate([
     Post(),
+    UseInterceptors(FileInterceptor('image', { limits: { fileSize: MAX_AVATAR_SIZE } })),
     __param(0, Body()),
+    __param(1, UploadedFile()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CreateUserDto]),
+    __metadata("design:paramtypes", [CreateUserDto, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "create", null);
 __decorate([
@@ -38,6 +46,16 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
+__decorate([
+    Put(':id'),
+    UseInterceptors(FileInterceptor('image', { limits: { fileSize: MAX_AVATAR_SIZE } })),
+    __param(0, Param('id')),
+    __param(1, Body()),
+    __param(2, UploadedFile()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, UpdateUserDto, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "update", null);
 UsersController = __decorate([
     Controller('users'),
     __metadata("design:paramtypes", [UsersService])
