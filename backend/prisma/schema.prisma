@@ -274,6 +274,7 @@ model Connection {
   id          String           @id @default(uuid())
   requesterId String
   recipientId String
+  pairKey     String           @unique
   status      ConnectionStatus @default(PENDING)
   createdAt   DateTime         @default(now())
   respondedAt DateTime?

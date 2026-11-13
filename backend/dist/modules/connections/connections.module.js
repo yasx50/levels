@@ -5,14 +5,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module.js';
 import { ConnectionsController } from './connections.controller.js';
 import { ConnectionsService } from './connections.service.js';
 let ConnectionsModule = class ConnectionsModule {
 };
 ConnectionsModule = __decorate([
     Module({
+        imports: [AuthModule],
         controllers: [ConnectionsController],
-        providers: [ConnectionsService]
+        providers: [ConnectionsService],
     })
 ], ConnectionsModule);
 export { ConnectionsModule };

@@ -20,23 +20,36 @@ let UsersService = class UsersService {
         const passwordHash = await bcrypt.hash(dto.password, 12);
         const avatar = image ? await uploadAvatar(image) : undefined;
         try {
-            return await this.prisma.user.create({
-                data: {
-                    name: dto.name,
-                    email: dto.email,
-                    phone: dto.phone,
-                    passwordHash,
-                    avatarUrl: avatar?.url,
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    phone: true,
-                    userType: true,
-                    avatarUrl: true,
-                    createdAt: true,
-                },
+            return await this.prisma.$transaction(async (transaction) => {
+                const user = await transaction.user.create({
+                    data: {
+                        name: dto.name,
+                        email: dto.email?.trim().toLowerCase(),
+                        phone: dto.phone,
+                        passwordHash,
+                        avatarUrl: avatar?.url,
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                        userType: true,
+                        avatarUrl: true,
+                        createdAt: true,
+                    },
+                });
+                if (user.email) {
+                    await transaction.account.create({
+                        data: {
+                            accountId: user.id,
+                            providerId: 'credential',
+                            userId: user.id,
+                            password: passwordHash,
+                        },
+                    });
+                }
+                return user;
             });
         }
         catch (error) {
@@ -63,7 +76,7 @@ let UsersService = class UsersService {
                 where: { id },
                 data: {
                     name: dto.name,
-                    email: dto.email,
+                    email: dto.email?.trim().toLowerCase(),
                     phone: dto.phone,
                     ...(avatar ? { avatarUrl: avatar.url } : {}),
                 },

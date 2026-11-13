@@ -4,11 +4,36 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { Controller } from '@nestjs/common';
-let ConnectionsController = class ConnectionsController {
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+import { Controller, Param, ParseUUIDPipe, Post, UseGuards, Req, } from '@nestjs/common';
+import { BetterAuthGuard } from '../auth/better-auth.guard.js';
+import { ConnectionsService } from './connections.service.js';
+let ConnectionsController = class ConnectionsController {
+    connectionsService;
+    constructor(connectionsService) {
+        this.connectionsService = connectionsService;
+    }
+    sendRequest(recipientId, request) {
+        return this.connectionsService.sendRequest(request.authUser.id, recipientId);
+    }
+};
+__decorate([
+    Post(':userId/request'),
+    __param(0, Param('userId', ParseUUIDPipe)),
+    __param(1, Req()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ConnectionsController.prototype, "sendRequest", null);
 ConnectionsController = __decorate([
-    Controller('connections')
+    Controller('connections'),
+    UseGuards(BetterAuthGuard),
+    __metadata("design:paramtypes", [ConnectionsService])
 ], ConnectionsController);
 export { ConnectionsController };
 //# sourceMappingURL=connections.controller.js.map

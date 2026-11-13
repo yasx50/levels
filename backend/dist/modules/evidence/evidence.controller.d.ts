@@ -10,9 +10,9 @@ export declare class EvidenceController {
             id: string;
             createdAt: Date;
             userId: string;
+            type: import("@prisma/client").$Enums.EvidenceType;
             description: string | null;
             userSkillId: string | null;
-            type: import("@prisma/client").$Enums.EvidenceType;
             title: string;
             fileUrl: string | null;
             organization: string | null;
@@ -60,9 +60,9 @@ export declare class EvidenceController {
         id: string;
         createdAt: Date;
         userId: string;
+        type: import("@prisma/client").$Enums.EvidenceType;
         description: string | null;
         userSkillId: string | null;
-        type: import("@prisma/client").$Enums.EvidenceType;
         title: string;
         fileUrl: string | null;
         organization: string | null;
@@ -99,9 +99,9 @@ export declare class EvidenceController {
         id: string;
         createdAt: Date;
         userId: string;
+        type: import("@prisma/client").$Enums.EvidenceType;
         description: string | null;
         userSkillId: string | null;
-        type: import("@prisma/client").$Enums.EvidenceType;
         title: string;
         fileUrl: string | null;
         organization: string | null;

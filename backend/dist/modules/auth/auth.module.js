@@ -6,12 +6,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { Module } from "@nestjs/common";
 import { AuthController } from "./auth.controller.js";
+import { BetterAuthGuard } from "./better-auth.guard.js";
 let AuthModule = class AuthModule {
 };
 AuthModule = __decorate([
     Module({
         controllers: [AuthController],
-        providers: [],
+        providers: [BetterAuthGuard],
+        exports: [BetterAuthGuard],
     })
 ], AuthModule);
 export { AuthModule };
