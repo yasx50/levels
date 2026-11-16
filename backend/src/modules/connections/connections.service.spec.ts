@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { ConnectionStatus, NotificationType, Prisma } from '@prisma/client';
@@ -11,9 +12,13 @@ import { ConnectionsService } from './connections.service.js';
 describe('ConnectionsService', () => {
   const findRecipient = vi.fn();
   const findExistingConnection = vi.fn();
+  const findConnectionRequests = vi.fn();
+  const updateConnection = vi.fn();
+  const findUpdatedConnection = vi.fn();
   const transaction = {
     connection: {
       findUnique: vi.fn(),
+      findFirst: findExistingConnection,
       create: vi.fn(),
       updateMany: vi.fn(),
       findUniqueOrThrow: vi.fn(),
@@ -27,7 +32,11 @@ describe('ConnectionsService', () => {
       findUnique: findRecipient,
     },
     connection: {
-      findUnique: findExistingConnection,
+      findFirst: findExistingConnection,
+      findMany: findConnectionRequests,
+      findUnique: vi.fn(),
+      updateMany: updateConnection,
+      findUniqueOrThrow: findUpdatedConnection,
     },
     $transaction: vi.fn(
       (callback: (client: typeof transaction) => Promise<unknown>) =>
@@ -52,7 +61,178 @@ describe('ConnectionsService', () => {
     findExistingConnection.mockResolvedValue(null);
     transaction.connection.findUnique.mockResolvedValue(null);
     transaction.connection.create.mockResolvedValue(connection);
+    transaction.connection.updateMany.mockResolvedValue({ count: 1 });
+    transaction.connection.findUniqueOrThrow.mockResolvedValue(connection);
+    updateConnection.mockResolvedValue({ count: 1 });
+    findUpdatedConnection.mockResolvedValue(connection);
     transaction.notification.create.mockResolvedValue({});
+  });
+
+  it('lists pending received requests with requester profiles, newest first', async () => {
+    const requests = [{ ...connection, requester: { id: 'sender-id' } }];
+    findConnectionRequests.mockResolvedValue(requests);
+
+    await expect(service.getReceivedRequests('recipient-id')).resolves.toEqual({
+      success: true,
+      message: 'Received connection requests retrieved successfully',
+      data: requests,
+    });
+    expect(findConnectionRequests).toHaveBeenCalledWith({
+      where: {
+        recipientId: 'recipient-id',
+        status: ConnectionStatus.PENDING,
+      },
+      select: expect.objectContaining({
+        requester: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+            image: true,
+            field: true,
+            role: true,
+          },
+        },
+      }),
+      orderBy: { createdAt: 'desc' },
+    });
+  });
+
+  it('lists pending sent requests with recipient profiles, newest first', async () => {
+    const requests = [{ ...connection, recipient: { id: 'recipient-id' } }];
+    findConnectionRequests.mockResolvedValue(requests);
+
+    await expect(service.getSentRequests('sender-id')).resolves.toEqual({
+      success: true,
+      message: 'Sent connection requests retrieved successfully',
+      data: requests,
+    });
+    expect(findConnectionRequests).toHaveBeenCalledWith({
+      where: { requesterId: 'sender-id', status: ConnectionStatus.PENDING },
+      select: expect.objectContaining({
+        recipient: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+            image: true,
+            field: true,
+            role: true,
+          },
+        },
+      }),
+      orderBy: { createdAt: 'desc' },
+    });
+  });
+
+  it('accepts a pending request and notifies the original requester atomically', async () => {
+    const acceptedRequest = {
+      ...connection,
+      status: ConnectionStatus.ACCEPTED,
+      respondedAt: new Date(),
+    };
+    transaction.connection.findUnique.mockResolvedValue(connection);
+    transaction.connection.findUniqueOrThrow.mockResolvedValue(acceptedRequest);
+
+    await expect(
+      service.acceptRequest('connection-id', 'recipient-id'),
+    ).resolves.toEqual({
+      success: true,
+      message: 'Connection request accepted successfully',
+      data: acceptedRequest,
+    });
+
+    expect(prisma.$transaction).toHaveBeenCalledOnce();
+    expect(transaction.connection.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'connection-id',
+        recipientId: 'recipient-id',
+        status: ConnectionStatus.PENDING,
+      },
+      data: {
+        status: ConnectionStatus.ACCEPTED,
+        respondedAt: expect.any(Date),
+      },
+    });
+    expect(transaction.notification.create).toHaveBeenCalledWith({
+      data: {
+        recipientId: 'sender-id',
+        actorId: 'recipient-id',
+        type: NotificationType.CONNECTION_ACCEPTED,
+        objectType: 'CONNECTION',
+        objectId: 'connection-id',
+      },
+    });
+  });
+
+  it('prevents requesters from accepting their own outgoing requests', async () => {
+    transaction.connection.findUnique.mockResolvedValue(connection);
+
+    await expect(
+      service.acceptRequest('connection-id', 'sender-id'),
+    ).rejects.toMatchObject({
+      response: {
+        statusCode: 403,
+        message: 'You are not allowed to respond to this connection request',
+      },
+    });
+    expect(transaction.connection.updateMany).not.toHaveBeenCalled();
+    expect(transaction.notification.create).not.toHaveBeenCalled();
+  });
+
+  it.each([ConnectionStatus.ACCEPTED, ConnectionStatus.REJECTED])(
+    'does not accept an already %s request',
+    async (status) => {
+      transaction.connection.findUnique.mockResolvedValue({
+        ...connection,
+        status,
+      });
+
+      await expect(
+        service.acceptRequest('connection-id', 'recipient-id'),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(transaction.connection.updateMany).not.toHaveBeenCalled();
+      expect(transaction.notification.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejects a pending request and sets respondedAt', async () => {
+    const rejectedRequest = {
+      ...connection,
+      status: ConnectionStatus.REJECTED,
+      respondedAt: new Date(),
+    };
+    transaction.connection.findUnique.mockResolvedValue(connection);
+    transaction.connection.findUniqueOrThrow.mockResolvedValue(rejectedRequest);
+
+    await expect(
+      service.rejectRequest('connection-id', 'recipient-id'),
+    ).resolves.toEqual({
+      success: true,
+      message: 'Connection request rejected successfully',
+      data: rejectedRequest,
+    });
+    expect(transaction.connection.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'connection-id',
+        recipientId: 'recipient-id',
+        status: ConnectionStatus.PENDING,
+      },
+      data: {
+        status: ConnectionStatus.REJECTED,
+        respondedAt: expect.any(Date),
+      },
+    });
+    expect(prisma.$transaction).toHaveBeenCalledOnce();
+  });
+
+  it('prevents requesters from rejecting their own outgoing requests', async () => {
+    transaction.connection.findUnique.mockResolvedValue(connection);
+
+    await expect(
+      service.rejectRequest('connection-id', 'sender-id'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(transaction.connection.updateMany).not.toHaveBeenCalled();
   });
 
   it('creates a pending connection and a recipient notification atomically', async () => {
@@ -123,7 +303,7 @@ describe('ConnectionsService', () => {
   ] as const)(
     'rejects existing %s relationship conflicts',
     async (status, existingRequesterId, expectedMessage) => {
-      transaction.connection.findUnique.mockResolvedValue({
+      findExistingConnection.mockResolvedValue({
         ...connection,
         requesterId: existingRequesterId,
         status,
@@ -140,7 +320,7 @@ describe('ConnectionsService', () => {
   );
 
   it('reopens a rejected relationship instead of creating a duplicate', async () => {
-    transaction.connection.findUnique.mockResolvedValue({
+    findExistingConnection.mockResolvedValue({
       ...connection,
       requesterId: 'recipient-id',
       recipientId: 'sender-id',
@@ -176,10 +356,12 @@ describe('ConnectionsService', () => {
         clientVersion: '6.19.3',
       }),
     );
-    findExistingConnection.mockResolvedValue({
-      requesterId: 'recipient-id',
-      status: ConnectionStatus.PENDING,
-    });
+    findExistingConnection
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        requesterId: 'recipient-id',
+        status: ConnectionStatus.PENDING,
+      });
 
     await expect(
       service.sendRequest('sender-id', 'recipient-id'),
@@ -189,7 +371,7 @@ describe('ConnectionsService', () => {
   });
 
   it('rejects a blocked relationship', async () => {
-    transaction.connection.findUnique.mockResolvedValue({
+    findExistingConnection.mockResolvedValue({
       ...connection,
       status: ConnectionStatus.BLOCKED,
     });

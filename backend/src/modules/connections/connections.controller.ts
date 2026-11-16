@@ -1,7 +1,9 @@
 import {
   Controller,
+  Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   UseGuards,
   Req,
@@ -24,5 +26,31 @@ export class ConnectionsController {
       request.authUser.id,
       recipientId,
     );
+  }
+
+  @Get('requests/received')
+  getReceivedRequests(@Req() request: AuthenticatedRequest) {
+    return this.connectionsService.getReceivedRequests(request.authUser.id);
+  }
+
+  @Get('requests/sent')
+  getSentRequests(@Req() request: AuthenticatedRequest) {
+    return this.connectionsService.getSentRequests(request.authUser.id);
+  }
+
+  @Patch(':id/accept')
+  acceptRequest(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.connectionsService.acceptRequest(id, request.authUser.id);
+  }
+
+  @Patch(':id/reject')
+  rejectRequest(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.connectionsService.rejectRequest(id, request.authUser.id);
   }
 }
