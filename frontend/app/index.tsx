@@ -1,9 +1,5 @@
-﻿import { View, Text } from 'react-native';
+﻿import { Redirect, type Href } from "expo-router";
 
 export default function Index() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Index</Text>
-    </View>
-  );
+  return <Redirect href={"/(auth)/login" as Href} />;
 }

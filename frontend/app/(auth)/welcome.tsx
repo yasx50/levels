@@ -3,7 +3,7 @@
 export default function Welcome() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Welcome</Text>
+      <Text>ooo</Text>
     </View>
   );
 }
