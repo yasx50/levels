@@ -22,7 +22,7 @@ export const auth = betterAuth({
   }),
 
   emailAndPassword: {
-    enabled: true,
+      enabled: true,
     password: {
       verify: async ({ hash, password }) => {
         if (/^\$2[aby]\$\d{2}\$/.test(hash)) {
