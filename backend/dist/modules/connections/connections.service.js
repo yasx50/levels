@@ -7,13 +7,147 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { BadRequestException, ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { ConnectionStatus, NotificationType, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service.js';
+const profileSelect = {
+    id: true,
+    name: true,
+    avatarUrl: true,
+    image: true,
+    field: true,
+    role: true,
+};
+const responseTargetSelect = {
+    id: true,
+    requesterId: true,
+    recipientId: true,
+    status: true,
+};
+const responseConnectionSelect = {
+    id: true,
+    requesterId: true,
+    recipientId: true,
+    status: true,
+    createdAt: true,
+    respondedAt: true,
+};
 let ConnectionsService = class ConnectionsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    async getReceivedRequests(userId) {
+        const requests = await this.prisma.connection.findMany({
+            where: { recipientId: userId, status: ConnectionStatus.PENDING },
+            select: {
+                id: true,
+                requesterId: true,
+                recipientId: true,
+                status: true,
+                createdAt: true,
+                respondedAt: true,
+                requester: { select: profileSelect },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+        return {
+            success: true,
+            message: 'Received connection requests retrieved successfully',
+            data: requests,
+        };
+    }
+    async getSentRequests(userId) {
+        const requests = await this.prisma.connection.findMany({
+            where: { requesterId: userId, status: ConnectionStatus.PENDING },
+            select: {
+                id: true,
+                requesterId: true,
+                recipientId: true,
+                status: true,
+                createdAt: true,
+                respondedAt: true,
+                recipient: { select: profileSelect },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+        return {
+            success: true,
+            message: 'Sent connection requests retrieved successfully',
+            data: requests,
+        };
+    }
+    async acceptRequest(connectionId, userId) {
+        const connection = await this.prisma.$transaction(async (transaction) => {
+            const request = await transaction.connection.findUnique({
+                where: { id: connectionId },
+                select: responseTargetSelect,
+            });
+            this.assertCanRespond(request, userId);
+            const respondedAt = new Date();
+            const updated = await transaction.connection.updateMany({
+                where: {
+                    id: connectionId,
+                    recipientId: userId,
+                    status: ConnectionStatus.PENDING,
+                },
+                data: { status: ConnectionStatus.ACCEPTED, respondedAt },
+            });
+            if (updated.count !== 1) {
+                throw new ConflictException('Connection request is no longer pending');
+            }
+            const acceptedRequest = await transaction.connection.findUniqueOrThrow({
+                where: { id: connectionId },
+                select: responseConnectionSelect,
+            });
+            await transaction.notification.create({
+                data: {
+                    recipientId: request.requesterId,
+                    actorId: userId,
+                    type: NotificationType.CONNECTION_ACCEPTED,
+                    objectType: 'CONNECTION',
+                    objectId: connectionId,
+                },
+            });
+            return acceptedRequest;
+        });
+        return {
+            success: true,
+            message: 'Connection request accepted successfully',
+            data: connection,
+        };
+    }
+    async rejectRequest(connectionId, userId) {
+        const rejectedRequest = await this.prisma.$transaction(async (transaction) => {
+            const request = await transaction.connection.findUnique({
+                where: { id: connectionId },
+                select: responseTargetSelect,
+            });
+            this.assertCanRespond(request, userId);
+            const updated = await transaction.connection.updateMany({
+                where: {
+                    id: connectionId,
+                    recipientId: userId,
+                    status: ConnectionStatus.PENDING,
+                },
+                data: {
+                    status: ConnectionStatus.REJECTED,
+                    respondedAt: new Date(),
+                },
+            });
+            if (updated.count !== 1) {
+                throw new ConflictException('Connection request is no longer pending');
+            }
+            return transaction.connection.findUniqueOrThrow({
+                where: { id: connectionId },
+                select: responseConnectionSelect,
+            });
+        });
+        return {
+            success: true,
+            message: 'Connection request rejected successfully',
+            data: rejectedRequest,
+        };
     }
     async sendRequest(requesterId, recipientId) {
         if (requesterId === recipientId) {
@@ -116,6 +250,17 @@ let ConnectionsService = class ConnectionsService {
                 throw new ConflictException('A connection request for this user already exists');
             }
             throw error;
+        }
+    }
+    assertCanRespond(request, userId) {
+        if (!request) {
+            throw new NotFoundException('Connection request not found');
+        }
+        if (request.requesterId === userId || request.recipientId !== userId) {
+            throw new ForbiddenException('You are not allowed to respond to this connection request');
+        }
+        if (request.status !== ConnectionStatus.PENDING) {
+            throw new ConflictException('Only pending connection requests can be accepted or rejected');
         }
     }
 };

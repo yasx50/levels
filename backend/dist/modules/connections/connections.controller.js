@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Controller, Param, ParseUUIDPipe, Post, UseGuards, Req, } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards, Req, } from '@nestjs/common';
 import { BetterAuthGuard } from '../auth/better-auth.guard.js';
 import { ConnectionsService } from './connections.service.js';
 let ConnectionsController = class ConnectionsController {
@@ -21,6 +21,18 @@ let ConnectionsController = class ConnectionsController {
     sendRequest(recipientId, request) {
         return this.connectionsService.sendRequest(request.authUser.id, recipientId);
     }
+    getReceivedRequests(request) {
+        return this.connectionsService.getReceivedRequests(request.authUser.id);
+    }
+    getSentRequests(request) {
+        return this.connectionsService.getSentRequests(request.authUser.id);
+    }
+    acceptRequest(id, request) {
+        return this.connectionsService.acceptRequest(id, request.authUser.id);
+    }
+    rejectRequest(id, request) {
+        return this.connectionsService.rejectRequest(id, request.authUser.id);
+    }
 };
 __decorate([
     Post(':userId/request'),
@@ -30,6 +42,36 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ConnectionsController.prototype, "sendRequest", null);
+__decorate([
+    Get('requests/received'),
+    __param(0, Req()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ConnectionsController.prototype, "getReceivedRequests", null);
+__decorate([
+    Get('requests/sent'),
+    __param(0, Req()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ConnectionsController.prototype, "getSentRequests", null);
+__decorate([
+    Patch(':id/accept'),
+    __param(0, Param('id', ParseUUIDPipe)),
+    __param(1, Req()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ConnectionsController.prototype, "acceptRequest", null);
+__decorate([
+    Patch(':id/reject'),
+    __param(0, Param('id', ParseUUIDPipe)),
+    __param(1, Req()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ConnectionsController.prototype, "rejectRequest", null);
 ConnectionsController = __decorate([
     Controller('connections'),
     UseGuards(BetterAuthGuard),

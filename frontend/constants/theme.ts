@@ -1,11 +1,11 @@
 export const AuthColors = {
-  background: '#F7F6F2',
+  background: '#F7F5ED',
   card: '#FFFFFF',
-  border: '#E9E7DF',
-  text: '#25251F',
-  secondary: '#77766F',
+  border: '#E9E6DD',
+  text: '#262521',
+  secondary: '#77756E',
   muted: '#A6A39A',
-  primary: '#A94717',
+  primary: '#A94716',
   iconBackground: '#F3F1E9',
 } as const;
 

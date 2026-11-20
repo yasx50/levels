@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
-  trustedOrigins: ['http://localhost:3000', 'http://localhost:5500'],
+  trustedOrigins: ['http://localhost:3000', 'http://localhost:5500','http://localhost:8081','http:// 192.168.0.101:8081'],
 
   account: {
     storeStateStrategy: 'cookie',

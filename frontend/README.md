@@ -1,5 +1,51 @@
 # Welcome to your Expo app 👋
 
+## SEN authentication and dashboard
+
+The sign-in screen uses the existing Better Auth endpoint at
+`POST /api/auth/sign-in/email`. Better Auth's bearer token is stored with
+Expo SecureStore on iOS and Android and sent with authenticated API requests.
+Set `EXPO_PUBLIC_API_URL` to the backend origin when it cannot be reached at
+the default address. The app uses `http://localhost:3000` except on Android
+emulators, where it uses `http://10.0.2.2:3000`. On a physical device, use the
+backend machine's reachable LAN address instead of `localhost`.
+
+The backend currently does not provide a dashboard endpoint. The app requests
+the provisional `GET /api/users/me/dashboard` route and displays a retryable
+error rather than sample data until the backend implements it. The values
+below document the response shape only; they are not app fallback data:
+
+```json
+{
+  "user": {
+    "id": "string",
+    "firstName": "string",
+    "lastName": "string",
+    "avatar": "string or null"
+  },
+  "level": {
+    "number": 0,
+    "name": "string",
+    "description": "string",
+    "progress": 0,
+    "nextLevel": {
+      "number": 0,
+      "name": "string"
+    }
+  },
+  "stats": {
+    "skills": 0,
+    "projects": 0,
+    "achievements": 0,
+    "connections": 0
+  }
+}
+```
+
+The API must derive the user from the authenticated session and include the
+level progress and four statistics. For web testing, the backend must also
+allow the app's origin in CORS and Better Auth trusted origins.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started

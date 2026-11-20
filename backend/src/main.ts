@@ -11,7 +11,12 @@ async function bootstrap() {
   const config = app.get(ConfigService);
 
   app.use(helmet());
-  app.enableCors(config.get('app.cors'));
+  app.enableCors({
+    origin: ['http://localhost:8081',"http://192.168.0.101:8081"], // Expo web frontend
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // only needed if you use cookies
+  });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
