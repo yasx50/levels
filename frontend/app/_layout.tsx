@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Redirect, Slot, useSegments } from 'expo-router';
+import { Redirect, Stack, useSegments } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -37,7 +37,11 @@ function RouteGate() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  return <Slot />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="skills/add" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
 }
 
 export default function Layout() {

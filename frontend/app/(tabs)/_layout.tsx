@@ -6,6 +6,7 @@ import { AuthColors } from '@/constants/theme';
 
 const tabIcons = {
   home: { active: 'home', inactive: 'home-outline' },
+  skills: { active: 'sparkles', inactive: 'sparkles-outline' },
   discover: { active: 'compass', inactive: 'compass-outline' },
   connections: { active: 'people', inactive: 'people-outline' },
   chat: { active: 'chatbubble-ellipses', inactive: 'chatbubble-ellipses-outline' },
@@ -42,6 +43,7 @@ export default function TabLayout() {
       })}
     >
       <Tabs.Screen name="home" options={{ title: 'Home' }} />
+      <Tabs.Screen name="skills" options={{ title: 'My Skills' }} />
       <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
       <Tabs.Screen name="connections" options={{ title: 'Connections' }} />
       <Tabs.Screen name="chat" options={{ title: 'Chat' }} />
