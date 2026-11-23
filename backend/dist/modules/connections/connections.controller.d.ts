@@ -20,9 +20,9 @@ export declare class ConnectionsController {
         data: {
             id: string;
             createdAt: Date;
+            status: import("@prisma/client").$Enums.ConnectionStatus;
             requesterId: string;
             recipientId: string;
-            status: import("@prisma/client").$Enums.ConnectionStatus;
             respondedAt: Date | null;
             requester: {
                 id: string;
@@ -40,10 +40,7 @@ export declare class ConnectionsController {
         data: {
             id: string;
             createdAt: Date;
-            requesterId: string;
-            recipientId: string;
             status: import("@prisma/client").$Enums.ConnectionStatus;
-            respondedAt: Date | null;
             recipient: {
                 id: string;
                 name: string;
@@ -52,6 +49,9 @@ export declare class ConnectionsController {
                 role: string | null;
                 avatarUrl: string | null;
             };
+            requesterId: string;
+            recipientId: string;
+            respondedAt: Date | null;
         }[];
     }>;
     acceptRequest(id: string, request: AuthenticatedRequest): Promise<{
@@ -60,9 +60,9 @@ export declare class ConnectionsController {
         data: {
             id: string;
             createdAt: Date;
+            status: import("@prisma/client").$Enums.ConnectionStatus;
             requesterId: string;
             recipientId: string;
-            status: import("@prisma/client").$Enums.ConnectionStatus;
             respondedAt: Date | null;
         };
     }>;
@@ -72,9 +72,9 @@ export declare class ConnectionsController {
         data: {
             id: string;
             createdAt: Date;
+            status: import("@prisma/client").$Enums.ConnectionStatus;
             requesterId: string;
             recipientId: string;
-            status: import("@prisma/client").$Enums.ConnectionStatus;
             respondedAt: Date | null;
         };
     }>;
