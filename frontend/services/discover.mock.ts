@@ -1,0 +1,123 @@
+import type {
+  DiscoverPerson,
+  DiscoverProject,
+  DiscoverSkill,
+} from '@/types/discover';
+
+export const mockDiscoverPeople: DiscoverPerson[] = [
+  {
+    id: 'maya-chen',
+    name: 'Maya Chen',
+    initials: 'MC',
+    designation: 'Product Designer',
+    level: 12,
+    description: 'Builds thoughtful systems with clear evidence.',
+    skills: ['UI/UX Design', 'Product Strategy', 'Design Systems'],
+  },
+  {
+    id: 'noah-williams',
+    name: 'Noah Williams',
+    initials: 'NW',
+    designation: 'Data Analyst',
+    level: 8,
+    description: 'Works at the intersection of research and metrics.',
+    skills: ['Data Analytics', 'SQL', 'Python'],
+  },
+  {
+    id: 'priya-shah',
+    name: 'Priya Shah',
+    initials: 'PS',
+    designation: 'Staff Researcher',
+    level: 11,
+    description: 'Turns complex questions into practical insights.',
+    skills: ['Machine Learning', 'Research', 'Statistics'],
+  },
+  {
+    id: 'leo-martinez',
+    name: 'Leo Martinez',
+    initials: 'LM',
+    designation: 'Frontend Engineer',
+    level: 10,
+    description: 'Creates fast, accessible product experiences.',
+    skills: ['React Development', 'TypeScript', 'Accessibility'],
+  },
+];
+
+export const mockDiscoverSkills: DiscoverSkill[] = [
+  {
+    id: 'react-development',
+    name: 'React Development',
+    category: 'Software Engineering',
+    peopleCount: 248,
+    description: 'Build polished, scalable interfaces across web and mobile.',
+    highlight: '1,420 evidence items',
+  },
+  {
+    id: 'machine-learning',
+    name: 'Machine Learning',
+    category: 'Artificial Intelligence',
+    peopleCount: 184,
+    description: 'Design models that turn data into useful decisions.',
+    highlight: '96 active projects',
+  },
+  {
+    id: 'ui-ux-design',
+    name: 'UI/UX Design',
+    category: 'Design',
+    peopleCount: 312,
+    description: 'Shape intuitive experiences grounded in user evidence.',
+    highlight: '2,300 evidence items',
+  },
+  {
+    id: 'data-analytics',
+    name: 'Data Analytics',
+    category: 'Data',
+    peopleCount: 203,
+    description: 'Find meaningful patterns and communicate clear results.',
+    highlight: '154 active projects',
+  },
+  {
+    id: 'backend-development',
+    name: 'Backend Development',
+    category: 'Software Engineering',
+    peopleCount: 267,
+    description: 'Create reliable APIs and durable product foundations.',
+    highlight: '1,860 evidence items',
+  },
+];
+
+export const mockDiscoverProjects: DiscoverProject[] = [
+  {
+    id: 'evidence-atlas',
+    title: 'Evidence Atlas',
+    description: 'A collaborative map that connects professional evidence to meaningful outcomes.',
+    category: 'Research',
+    technologies: ['React', 'TypeScript', 'PostgreSQL'],
+    ownerId: 'maya-chen',
+    ownerName: 'Maya Chen',
+    ownerInitials: 'MC',
+    contributorCount: 8,
+  },
+  {
+    id: 'skill-signal',
+    title: 'Skill Signal',
+    description: 'An adaptive platform for recognizing verified, evolving professional skills.',
+    category: 'Product',
+    technologies: ['React Native', 'Machine Learning', 'Expo'],
+    ownerId: 'priya-shah',
+    ownerName: 'Priya Shah',
+    ownerInitials: 'PS',
+    contributorCount: 6,
+  },
+  {
+    id: 'metric-lens',
+    title: 'Metric Lens',
+    description: 'A practical analytics workspace for turning team metrics into decisions.',
+    category: 'Analytics',
+    technologies: ['Python', 'SQL', 'Data Visualization'],
+    ownerId: 'noah-williams',
+    ownerName: 'Noah Williams',
+    ownerInitials: 'NW',
+    contributorCount: 5,
+  },
+];
