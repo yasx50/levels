@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { profileService } from '@/services/profile';
+import type { ProfileFormData } from '@/types/profile';
 
 export const profileKeys = {
   all: ['profile'] as const,
@@ -18,6 +19,23 @@ export function useProfile() {
         profileService.getProfileOverview(),
       ]);
       return { profile, overview };
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ProfileFormData) =>
+      profileService.updateUserProfile(input),
+    onSuccess: async (profile) => {
+      queryClient.setQueryData(
+        profileKeys.current(),
+        (current: { profile: typeof profile; overview: unknown } | undefined) =>
+          current ? { ...current, profile } : current,
+      );
+      await queryClient.invalidateQueries({ queryKey: profileKeys.current() });
     },
   });
 }

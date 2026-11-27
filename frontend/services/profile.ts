@@ -1,10 +1,18 @@
 import { mockProfileService } from '@/services/profile.mock';
-import type { ProfileOverview, UserProfile } from '@/types/profile';
+import type {
+  ProfileFormData,
+  ProfileOverview,
+  ProfileVisibility,
+  UserProfile,
+} from '@/types/profile';
 
 export type ProfileService = {
   getCurrentUserProfile: () => Promise<UserProfile | null>;
   getProfileOverview: () => Promise<ProfileOverview>;
   getProfileById: (profileId: string) => Promise<UserProfile | null>;
+  updateUserProfile: (input: ProfileFormData) => Promise<UserProfile>;
+  updateProfileVisibility: (visibility: ProfileVisibility) => Promise<UserProfile>;
+  uploadProfileAvatar: (avatar: unknown) => Promise<UserProfile>;
 };
 
 // TODO: Connect profile reads through the existing API client after the backend

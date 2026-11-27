@@ -87,19 +87,30 @@ export function ProfileInfo({ profile }: { profile: UserProfile }) {
   );
 }
 
-function ProfileAvatar({
+export function ProfileAvatar({
   avatarUrl,
   initials,
   name,
+  size = 86,
 }: {
   avatarUrl: string | null;
   initials: string;
   name: string;
+  size?: number;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <View style={styles.avatar}>
+    <View
+      style={[
+        styles.avatar,
+        {
+          borderRadius: size / 2,
+          height: size,
+          width: size,
+        },
+      ]}
+    >
       {avatarUrl && !imageFailed ? (
         <Image
           accessibilityLabel={`${name}'s profile photo`}
@@ -108,7 +119,9 @@ function ProfileAvatar({
           onError={() => setImageFailed(true)}
         />
       ) : (
-        <Text style={styles.initials}>{initials}</Text>
+        <Text style={[styles.initials, size < 60 && styles.compactInitials]}>
+          {initials}
+        </Text>
       )}
     </View>
   );
@@ -254,6 +267,9 @@ const styles = StyleSheet.create({
     color: AuthColors.primary,
     fontSize: 25,
     fontWeight: '800',
+  },
+  compactInitials: {
+    fontSize: 12,
   },
   name: {
     color: AuthColors.text,
